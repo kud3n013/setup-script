@@ -382,6 +382,24 @@ if (Test-Path $appsConfigPath) {
                     })
 
                     $groupStack.Children.Add($masBtn) | Out-Null
+
+                    # MAS Online Activation button
+                    $masOnlineBtn = New-Object System.Windows.Controls.Button
+                    $masOnlineBtn.Content = "Activate Office (MAS Online)"
+                    $masOnlineBtn.Margin = "0,4,0,4"
+                    $masOnlineBtn.Padding = "12,6"
+                    $masOnlineBtn.FontSize = 13
+                    $masOnlineBtn.FontWeight = "SemiBold"
+                    $masOnlineBtn.Background = [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#E0E7FF"))
+                    $masOnlineBtn.Foreground = [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#4338CA"))
+                    $masOnlineBtn.BorderThickness = "0"
+
+                    $masOnlineBtn.Add_Click({
+                        $masOnlineCmd = 'try { irm https://get.activated.win -ErrorAction Stop | iex } catch { iex (curl.exe -s --doh-url https://1.1.1.1/dns-query https://get.activated.win | Out-String) }'
+                        Start-Process "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"$masOnlineCmd`"" -Verb RunAs
+                    })
+
+                    $groupStack.Children.Add($masOnlineBtn) | Out-Null
                 }
                 else {
                     # Standard apps render as checkboxes
