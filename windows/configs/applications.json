@@ -1,10 +1,12 @@
 {
   "Communication": [
-    { "name": "Proton Mail", "type": "scoop", "id": "extras/proton-mail" },
     { "name": "Signal", "type": "scoop", "id": "extras/signal" },
     { "name": "Discord", "type": "scoop", "id": "extras/discord" },
     { "name": "Beeper", "type": "winget", "id": "Beeper.Beeper" },
-    { "name": "Zalo", "type": "winget", "id": "VNGCorp.Zalo" }
+    { "name": "Zalo", "type": "winget", "id": "VNGCorp.Zalo" },
+    { "name": "Zoom", "type": "scoop", "id": "extras/zoom" },
+    { "name": "ClassIn", "type": "winget", "id": "EEO.ClassIn" },
+    { "name": "Thunderbird", "type": "scoop", "id": "extras/thunderbird" }
   ],
   "Development": [
     { "name": "Git", "type": "scoop", "id": "main/git" },
@@ -12,15 +14,25 @@
     { "name": "Docker", "type": "scoop", "id": "main/docker" },
     { "name": "Neovim", "type": "scoop", "id": "main/neovim" },
     { "name": "Windows Terminal", "type": "scoop", "id": "extras/windows-terminal" },
-    { "name": "PowerShell 7", "type": "winget", "id": "Microsoft.PowerShell" }
+    { "name": "PowerShell 7", "type": "winget", "id": "Microsoft.PowerShell" },
+    { "name": "Node.js", "type": "scoop", "id": "main/nodejs" }
   ],
-  "Utilities": [
+  "AI": [
+    { "name": "Ollama", "type": "scoop", "id": "extras/ollama-full" },
+    { "name": "LM Studio", "type": "winget", "id": "ElementLabs.LMStudio" },
+    { "name": "Claude", "type": "scoop", "id": "extras/claude" },
+    { "name": "ChatGPT", "type": "scoop", "id": "extras/chatgpt" }
+  ],
+  "Proton Suite": [
+    { "name": "Proton Mail", "type": "scoop", "id": "extras/proton-mail" },
     { "name": "Proton Pass", "type": "scoop", "id": "extras/proton-pass" },
     { "name": "Proton Drive", "type": "scoop", "id": "extras/proton-drive" },
     { "name": "Proton Authenticator", "type": "scoop", "id": "extras/proton-authenticator" },
     { "name": "Proton Mail Export", "type": "scoop", "id": "extras/proton-mail-export" },
     { "name": "Proton Mail Bridge", "type": "scoop", "id": "extras/protonmail-bridge" },
-    { "name": "Proton VPN", "type": "scoop", "id": "nonportable/protonvpn-np" },
+    { "name": "Proton VPN", "type": "scoop", "id": "nonportable/protonvpn-np" }
+  ],
+  "Utilities": [
     { "name": "PowerToys", "type": "scoop", "id": "extras/powertoys" },
     { "name": "ActivityWatch", "type": "scoop", "id": "extras/activitywatch" },
     { "name": "Free Download Manager", "type": "scoop", "id": "extras/freedownloadmanager" },
@@ -35,26 +47,40 @@
     { "name": "Windhawk", "type": "scoop", "id": "extras/windhawk" },
     { "name": "Mica For Everyone", "type": "scoop", "id": "extras/micaforeveryone" },
     { "name": "Winget", "type": "scoop", "id": "main/winget" },
-    { "name": "Wacom Tablet Driver", "type": "winget", "id": "Wacom.WacomTabletDriver" }
+    { "name": "Wacom Tablet Driver", "type": "winget", "id": "Wacom.WacomTabletDriver" },
+    { "name": "FilePilot", "type": "winget", "id": "Voidstar.FilePilot" },
+    { "name": "File Converter", "type": "scoop", "id": "nonportable/file-converter-np" },
+    { "name": "Flow Launcher", "type": "scoop", "id": "extras/flow-launcher" }
   ],
   "Browsers": [
     { "name": "Zen Browser", "type": "scoop", "id": "extras/zen-browser" },
     { "name": "Ungoogled Chromium", "type": "scoop", "id": "extras/ungoogled-chromium" },
     { "name": "Vivaldi", "type": "scoop", "id": "extras/vivaldi" },
     { "name": "Brave", "type": "scoop", "id": "extras/brave" },
-    { "name": "Firefox", "type": "scoop", "id": "extras/firefox" }
+    { "name": "Firefox", "type": "scoop", "id": "extras/firefox" },
+    { "name": "Cốc Cốc", "type": "winget", "id": "CocCoc.CocCoc" }
   ],
   "Productivity": [
     { "name": "Obsidian", "type": "scoop", "id": "extras/obsidian" },
-    { "name": "Zotero", "type": "scoop", "id": "extras/zotero" }
+    { "name": "Zotero", "type": "scoop", "id": "extras/zotero" },
+    { "name": "Todoist", "type": "winget", "id": "Doist.Todoist" }
+  ],
+  "Design": [
+    { "name": "Krita", "type": "scoop", "id": "extras/krita" },
+    { "name": "Inkscape", "type": "scoop", "id": "extras/inkscape" },
+    { "name": "Affinity", "type": "winget", "id": "Canva.Affinity" },
+    { "name": "Canva", "type": "winget", "id": "Canva.Canva" }
   ],
   "Games": [
     { "name": "Steam", "type": "scoop", "id": "games/steam" },
     { "name": "Epic Games Launcher", "type": "scoop", "id": "games/epic-games-launcher" }
   ],
   "Media": [
+    { "name": "foobar2000", "type": "scoop", "id": "extras/foobar2000" },
     { "name": "Vencord Installer", "type": "scoop", "id": "extras/vencord-installer" },
-    { "name": "K-Lite Codec Pack Mega", "type": "scoop", "id": "nonportable/k-lite-codec-pack-mega-np" }
+    { "name": "K-Lite Codec Pack Mega", "type": "scoop", "id": "nonportable/k-lite-codec-pack-mega-np" },
+    { "name": "Screenbox", "type": "winget", "id": "Starpine.Screenbox" },
+    { "name": "VLC", "type": "scoop", "id": "extras/vlc" }
   ],
   "Runtimes": [
     { "name": ".NET Runtime 10.0", "type": "scoop", "id": "versions/windowsdesktop-runtime-10.0" },
@@ -69,5 +95,24 @@
     { "name": "VCRedist 2008", "type": "scoop", "id": "extras/vcredist2008" },
     { "name": "VCRedist 2005", "type": "scoop", "id": "extras/vcredist2005" },
     { "name": "VCRedist (Base)", "type": "scoop", "id": "extras/vcredist" }
+  ],
+  "Advanced Configuration": [
+    {
+      "name": "Microsoft Office Suite",
+      "handler": "odt",
+      "apps": [
+        { "name": "Word", "id": "Word", "default": true },
+        { "name": "Excel", "id": "Excel", "default": true },
+        { "name": "PowerPoint", "id": "PowerPoint", "default": true },
+        { "name": "Access", "id": "Access", "default": false },
+        { "name": "OneDrive", "id": "OneDrive", "default": false },
+        { "name": "OneNote", "id": "OneNote", "default": false },
+        { "name": "Outlook", "id": "Outlook", "default": false },
+        { "name": "Publisher", "id": "Publisher", "default": false },
+        { "name": "Groove (OneDrive for Business)", "id": "Groove", "default": false },
+        { "name": "Lync (Skype for Business)", "id": "Lync", "default": false },
+        { "name": "Bing", "id": "Bing", "default": false }
+      ]
+    }
   ]
 }
