@@ -290,25 +290,16 @@ $excludeLines    </Product>$viProofingProduct
 # Load Applications Config and Generate UI Checkboxes
 $global:AppCheckboxes = @()
 $global:AdvancedHandlerCheckboxes = @{}
-
-# Try local path first, fall back to fetching from GitHub
 $appsConfigPath = Join-Path $PSScriptRoot "configs\applications.json"
-$appsJsonRaw = $null
+$appsConfigUrl = "https://raw.githubusercontent.com/kud3n013/setup-script/master/windows/configs/applications.json"
 
-if ($PSScriptRoot -and (Test-Path $appsConfigPath)) {
-    $appsJsonRaw = Get-Content -Raw $appsConfigPath
-} else {
-    try {
-        $appsJsonRaw = Invoke-RestMethod -Uri "https://raw.githubusercontent.com/kud3n013/setup-script/master/windows/configs/applications.json"
-    } catch {
-        Write-Host "Failed to download applications.json from GitHub." -ForegroundColor Red
+try {
+    if (Test-Path $appsConfigPath) {
+        $appsConfig = Get-Content -Raw $appsConfigPath | ConvertFrom-Json
+    } else {
+        $appsConfig = (Invoke-WebRequest -Uri $appsConfigUrl -UseBasicParsing).Content | ConvertFrom-Json
     }
-}
-
-if ($appsJsonRaw) {
-    try {
-        $appsConfig = $appsJsonRaw | ConvertFrom-Json
-        foreach ($category in $appsConfig.PSObject.Properties) {
+    foreach ($category in $appsConfig.PSObject.Properties) {
             $groupStack = New-Object System.Windows.Controls.StackPanel
             $groupStack.Margin = "0,0,20,30"
             $groupStack.Width = 220
@@ -512,9 +503,9 @@ if ($appsJsonRaw) {
         }
     }
     catch {
-        Write-Host "Failed to parse applications.json config!" -ForegroundColor Red
+        Write-Host "Failed to load or parse applications.json config!" -ForegroundColor Red
+        Write-Host $_.Exception.Message -ForegroundColor Red
     }
-}
 
 # Theming Logic
 $global:IsDarkMode = $false
