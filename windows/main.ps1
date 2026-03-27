@@ -290,11 +290,24 @@ $excludeLines    </Product>$viProofingProduct
 # Load Applications Config and Generate UI Checkboxes
 $global:AppCheckboxes = @()
 $global:AdvancedHandlerCheckboxes = @{}
-$appsConfigPath = Join-Path $PSScriptRoot "configs\applications.json"
 
-if (Test-Path $appsConfigPath) {
+# Try local path first, fall back to fetching from GitHub
+$appsConfigPath = Join-Path $PSScriptRoot "configs\applications.json"
+$appsJsonRaw = $null
+
+if ($PSScriptRoot -and (Test-Path $appsConfigPath)) {
+    $appsJsonRaw = Get-Content -Raw $appsConfigPath
+} else {
     try {
-        $appsConfig = Get-Content -Raw $appsConfigPath | ConvertFrom-Json
+        $appsJsonRaw = Invoke-RestMethod -Uri "https://raw.githubusercontent.com/kud3n013/setup-script/master/windows/configs/applications.json"
+    } catch {
+        Write-Host "Failed to download applications.json from GitHub." -ForegroundColor Red
+    }
+}
+
+if ($appsJsonRaw) {
+    try {
+        $appsConfig = $appsJsonRaw | ConvertFrom-Json
         foreach ($category in $appsConfig.PSObject.Properties) {
             $groupStack = New-Object System.Windows.Controls.StackPanel
             $groupStack.Margin = "0,0,20,30"
