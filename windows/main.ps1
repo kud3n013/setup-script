@@ -56,6 +56,26 @@ Add-Type -AssemblyName System.Windows.Forms
                     </Button.Resources>
                 </Button>
 
+                <Button Name="NavAdvancedTools" Content="Advanced Tools" Height="40" Margin="0,5,0,5" 
+                        Background="Transparent" BorderThickness="0" FontSize="14" FontWeight="SemiBold"
+                        HorizontalContentAlignment="Left" Padding="15,0" Foreground="{DynamicResource NavBtnFg}">
+                    <Button.Resources>
+                        <Style TargetType="{x:Type Border}">
+                            <Setter Property="CornerRadius" Value="6"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+
+                <Button Name="NavShortcutsKreation" Content="Shortcuts Kreation" Height="40" Margin="0,5,0,5" 
+                        Background="Transparent" BorderThickness="0" FontSize="14" FontWeight="SemiBold"
+                        HorizontalContentAlignment="Left" Padding="15,0" Foreground="{DynamicResource NavBtnFg}">
+                    <Button.Resources>
+                        <Style TargetType="{x:Type Border}">
+                            <Setter Property="CornerRadius" Value="6"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+
                 <Separator Margin="0,15,0,15" Background="{DynamicResource SeparatorBg}" />
 
                 <Button Name="BtnToggleTheme" Content="🌓 Toggle Theme" Height="40" Margin="0,5,0,5" 
@@ -125,6 +145,26 @@ Add-Type -AssemblyName System.Windows.Forms
                     <TextBlock Text="Import and Export User Configurations." 
                                FontSize="15" Foreground="{DynamicResource TextBody}" TextWrapping="Wrap"/>
                 </StackPanel>
+
+                <!-- Advanced Tools Panel -->
+                <Grid Name="PanelAdvancedTools" Grid.Row="2" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <TextBlock Grid.Row="0" Text="Advanced Configuration and Tools" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,10" Foreground="{DynamicResource TextLabel}"/>
+                    
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,20">
+                        <WrapPanel Name="AdvancedListPanel" Orientation="Horizontal" />
+                    </ScrollViewer>
+                </Grid>
+                
+                <!-- Shortcuts Kreation Panel -->
+                <StackPanel Name="PanelShortcutsKreation" Grid.Row="2" Visibility="Collapsed">
+                    <TextBlock Text="Create and manage desktop or start menu shortcuts." 
+                               FontSize="15" Foreground="{DynamicResource TextBody}" TextWrapping="Wrap"/>
+                </StackPanel>
                 
                 <!-- Welcome/Home Panel -->
                 <StackPanel Name="PanelWelcome" Grid.Row="2" Visibility="Visible">
@@ -151,16 +191,21 @@ catch {
 # Map UI Elements to PowerShell Variables
 $NavInstall = $Form.FindName("NavInstall")
 $NavUserConfigs = $Form.FindName("NavUserConfigs")
+$NavAdvancedTools = $Form.FindName("NavAdvancedTools")
+$NavShortcutsKreation = $Form.FindName("NavShortcutsKreation")
 $BtnToggleTheme = $Form.FindName("BtnToggleTheme")
 $MainTitle = $Form.FindName("MainTitle")
 
 $PanelInstall = $Form.FindName("PanelInstall")
 $PanelUserConfigs = $Form.FindName("PanelUserConfigs")
+$PanelAdvancedTools = $Form.FindName("PanelAdvancedTools")
+$PanelShortcutsKreation = $Form.FindName("PanelShortcutsKreation")
 $PanelWelcome = $Form.FindName("PanelWelcome")
 
 $BtnInstallScoop = $Form.FindName("BtnInstallScoop")
 
 $AppListPanel = $Form.FindName("AppListPanel")
+$AdvancedListPanel = $Form.FindName("AdvancedListPanel")
 $BtnInstallSelected = $Form.FindName("BtnInstallSelected")
 
 # Advanced Config Install Handler
@@ -500,7 +545,12 @@ try {
                 }
             }
 
-            $AppListPanel.Children.Add($groupStack) | Out-Null
+            if ($category.Name -eq "Advanced Tools") {
+                $AdvancedListPanel.Children.Add($groupStack) | Out-Null
+            }
+            else {
+                $AppListPanel.Children.Add($groupStack) | Out-Null
+            }
         }
     }
     catch {
@@ -562,6 +612,8 @@ $BtnToggleTheme.Add_Click({
 function Hide-AllPanels {
     $PanelInstall.Visibility = "Collapsed"
     $PanelUserConfigs.Visibility = "Collapsed"
+    $PanelAdvancedTools.Visibility = "Collapsed"
+    $PanelShortcutsKreation.Visibility = "Collapsed"
     $PanelWelcome.Visibility = "Collapsed"
 }
 
@@ -570,6 +622,8 @@ function Set-MenuHighlight {
     param([System.Windows.Controls.Button]$SelectedButton)
     $NavInstall.Background = "Transparent"
     $NavUserConfigs.Background = "Transparent"
+    $NavAdvancedTools.Background = "Transparent"
+    $NavShortcutsKreation.Background = "Transparent"
     $SelectedButton.SetResourceReference([System.Windows.Controls.Control]::BackgroundProperty, "NavBtnActiveBg")
 }
 
@@ -586,6 +640,20 @@ $NavUserConfigs.Add_Click({
         $MainTitle.Text = "User Configs"
         Hide-AllPanels
         $PanelUserConfigs.Visibility = "Visible"
+    })
+
+$NavAdvancedTools.Add_Click({
+        Set-MenuHighlight $NavAdvancedTools
+        $MainTitle.Text = "Advanced Tools"
+        Hide-AllPanels
+        $PanelAdvancedTools.Visibility = "Visible"
+    })
+
+$NavShortcutsKreation.Add_Click({
+        Set-MenuHighlight $NavShortcutsKreation
+        $MainTitle.Text = "Shortcuts Kreation"
+        Hide-AllPanels
+        $PanelShortcutsKreation.Visibility = "Visible"
     })
 
 $BtnInstallScoop.Add_Click({
@@ -617,7 +685,7 @@ $BtnInstallSelected.Add_Click({
         [System.Windows.Forms.Application]::DoEvents()
 
         # Define required buckets
-        $buckets = @("extras", "nonportable", "games", "main", "versions")
+        $buckets = @("extras", "nonportable", "games", "main", "versions", "nerd-fonts", "nirsoft")
 
         # Add Scoop buckets (Silently continues if already exists)
         foreach ($b in $buckets) {
