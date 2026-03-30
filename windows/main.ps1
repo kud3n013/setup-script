@@ -163,8 +163,8 @@ Add-Type -AssemblyName System.Windows.Forms
                                 <ToggleButton Name="BucketNonportable" Content="nonportable" Uid="nonportable" Tag="nonportable" />
                                 <ToggleButton Name="BucketJava" Content="java" Uid="java" Tag="java" />
                                 <ToggleButton Name="BucketGames" Content="games" Uid="games" Tag="games" />
-                                <ToggleButton Name="BucketScoopMaster" Content="ScoopMaster" Uid="ScoopMaster" Tag="okibcn_ScoopMaster|https://github.com/okibcn/ScoopMaster" IsChecked="False" />
                                 <ToggleButton Name="BucketDEVtools" Content="DEV-tools" Uid="DEV-tools" Tag="anderlli0053_DEV-tools|https://github.com/anderlli0053/DEV-tools" IsChecked="False" />
+                                <ToggleButton Name="BucketIcekream" Content="icekream" Uid="icekream" Tag="kud3n013_icekream|https://github.com/kud3n013/icekream" IsChecked="True" />
                             </WrapPanel>
                         </ScrollViewer>
 
@@ -618,7 +618,12 @@ try {
                     $cb.Margin = "0,4,0,4"
                     $cb.FontSize = 14
                     
-                    if ($app.type -eq "scoop") {
+                    if ([string]::IsNullOrWhiteSpace($app.id)) {
+                        $cb.IsEnabled = $false
+                        $cb.Opacity = 0.5
+                        $cb.SetResourceReference([System.Windows.Controls.Control]::ForegroundProperty, "TextBody")
+                    }
+                    elseif ($app.type -eq "scoop") {
                         $cb.Foreground = "#059669" # Emerald/Green
                     }
                     elseif ($app.type -eq "winget") {
@@ -809,6 +814,10 @@ $BtnInstallScoop.Add_Click({
             else {
                 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force -ErrorAction Stop
                 Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+                
+                # Automatically add the icekream bucket during install
+                scoop bucket add kud3n013_icekream https://github.com/kud3n013/icekream | Out-Null
+                
                 $BtnInstallScoop.Content = "Scoop Installed"
             }
         }

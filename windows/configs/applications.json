@@ -37,8 +37,8 @@
     },
     {
       "name": "Zalo",
-      "type": "winget",
-      "id": "VNGCorp.Zalo"
+      "type": "scoop",
+      "id": "kud3n013_icekream/zalo"
     },
     {
       "name": "Zoom",
@@ -194,11 +194,6 @@
       "id": "extras/freedownloadmanager"
     },
     {
-      "name": "Microsoft Activation Scripts",
-      "type": "scoop",
-      "id": "okibcn_ScoopMaster/mas"
-    },
-    {
       "name": "Office Tool Plus",
       "type": "scoop",
       "id": "extras/office-tool-plus"
@@ -215,13 +210,13 @@
     },
     {
       "name": "UniKey",
-      "type": "winget",
-      "id": "UniKey.UniKey"
+      "type": "scoop",
+      "id": "kud3n013_icekream/unikey"
     },
     {
       "name": "Wacom Tablet Driver",
       "type": "scoop",
-      "id": "okibcn_ScoopMaster/WacomTablet-Install"
+      "id": "kud3n013_icekream/wacomtablet-driver"
     },
     {
       "name": "Winget",
@@ -294,8 +289,8 @@
     },
     {
       "name": "Cốc Cốc",
-      "type": "winget",
-      "id": "CocCoc.CocCoc"
+      "type": "scoop",
+      "id": ""
     },
     {
       "name": "Firefox",
@@ -421,11 +416,6 @@
       "id": "games/atlauncher"
     },
     {
-      "name": "CnCNet Mental Omega",
-      "type": "scoop",
-      "id": "okibcn_ScoopMaster/cncnet-mental-omega"
-    },
-    {
       "name": "Epic Games Launcher",
       "type": "scoop",
       "id": "games/epic-games-launcher"
@@ -437,6 +427,11 @@
     }
   ],
   "Media": [
+    {
+      "name": "digiKam",
+      "type": "scoop",
+      "id": "extras/digikam"
+    },
     {
       "name": "foobar2000",
       "type": "scoop",
