@@ -412,79 +412,7 @@ $excludeLines    </Product>$viProofingProduct
         $Button.Content = "Install $AppName"
         $Button.IsEnabled = $true
     }
-    elseif ($data.handler -eq "searxng") {
-        $Button.Content = "Installing..."
-        $Button.IsEnabled = $false
-        [System.Windows.Forms.Application]::DoEvents()
 
-        try {
-            # Step 1: Verify Docker is available
-            if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-                Write-Host "Docker is not installed or not in PATH. Please install Docker first." -ForegroundColor Red
-                $Button.Content = "Docker Not Found"
-                $Button.IsEnabled = $true
-                return
-            }
-
-            # Step 2: Pull the SearxNG image
-            Write-Host "Pulling SearxNG Docker image..." -ForegroundColor Cyan
-            docker pull searxng/searxng
-            [System.Windows.Forms.Application]::DoEvents()
-
-            # Step 3: Create data directory for persistent config
-            $searxngData = Join-Path $env:LOCALAPPDATA "SearxNG"
-            if (-not (Test-Path $searxngData)) {
-                New-Item -ItemType Directory -Path $searxngData -Force | Out-Null
-                Write-Host "Created SearxNG data directory: $searxngData" -ForegroundColor Cyan
-            }
-
-            # Step 4: Run the container on port 8888 with auto-restart and volume
-            Write-Host "Starting SearxNG container on port 8888..." -ForegroundColor Cyan
-            docker run -d -p 8888:8080 --name searxng --restart unless-stopped -v "${searxngData}:/etc/searxng" searxng/searxng
-            Write-Host "SearxNG is running at http://localhost:8888" -ForegroundColor Green
-
-            $Button.Content = "SearxNG Installed"
-        }
-        catch {
-            Write-Host "SearxNG installation failed: $_" -ForegroundColor Red
-            $Button.Content = "Install Failed"
-            $Button.IsEnabled = $true
-        }
-    }
-    elseif ($data.handler -eq "docker") {
-        $Button.Content = "Installing..."
-        $Button.IsEnabled = $false
-        [System.Windows.Forms.Application]::DoEvents()
-
-        try {
-            Write-Host "Installing Docker via Scoop..." -ForegroundColor Cyan
-            if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-                scoop install main/docker
-                [System.Windows.Forms.Application]::DoEvents()
-            } else {
-                Write-Host "Docker is already installed." -ForegroundColor Yellow
-            }
-            if (-not (Get-Command docker-compose -ErrorAction SilentlyContinue)) {
-                scoop install main/docker-compose
-                [System.Windows.Forms.Application]::DoEvents()
-            } else {
-                Write-Host "Docker Compose is already installed." -ForegroundColor Yellow
-            }
-
-            Write-Host "Enabling Windows Subsystem for Linux (WSL)..." -ForegroundColor Cyan
-            wsl --install
-            wsl --update
-            Write-Host "WSL installation completed successfully." -ForegroundColor Green
-            Write-Host "NOTE: A system restart may be required to complete WSL setup." -ForegroundColor Yellow
-
-            $Button.Content = "Docker Installed"
-        }
-        catch {
-            Write-Host "Docker installation failed: $_" -ForegroundColor Red
-            $Button.Content = "Install Failed"
-            $Button.IsEnabled = $true
-        }
-    }
 }
 
 # Load Applications Config and Generate UI Checkboxes
@@ -606,113 +534,7 @@ try {
 
                 $groupStack.Children.Add($masOnlineBtn) | Out-Null
             }
-            elseif ($app.handler -and $app.handler -eq "docker") {
-                # Docker section label
-                $label = New-Object System.Windows.Controls.TextBlock
-                $label.Text = $app.name
-                $label.FontWeight = "SemiBold"
-                $label.FontSize = 14
-                $label.Foreground = [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#4338CA"))
-                $label.Margin = "0,14,0,4"
-                $groupStack.Children.Add($label) | Out-Null
 
-                # Description
-                $desc = New-Object System.Windows.Controls.TextBlock
-                $desc.Text = "Docker CLI and Daemon via Scoop.`nClick 'Enable Docker' to initialize daemon."
-                $desc.TextWrapping = "Wrap"
-                $desc.FontSize = 12
-                $desc.FontStyle = "Italic"
-                $desc.Margin = "0,2,0,6"
-                $desc.SetResourceReference([System.Windows.Controls.TextBlock]::ForegroundProperty, "TextBody")
-                $groupStack.Children.Add($desc) | Out-Null
-
-                # Store handler reference
-                $global:AdvancedHandlerCheckboxes[$app.name] = @{
-                    handler    = $app.handler
-                    checkboxes = @()
-                }
-
-                # Install button
-                $dockerBtn = New-Object System.Windows.Controls.Button
-                $dockerBtn.Content = "Install $($app.name)"
-                $dockerBtn.Tag = $app.name
-                $dockerBtn.Margin = "0,4,0,4"
-                $dockerBtn.Padding = "12,6"
-                $dockerBtn.FontSize = 13
-                $dockerBtn.FontWeight = "SemiBold"
-                $dockerBtn.Background = [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#10B981"))
-                $dockerBtn.Foreground = [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("White"))
-                $dockerBtn.BorderThickness = "0"
-
-                $dockerBtn.Add_Click({
-                        param($s, $e)
-                        $clickedAppName = $s.Tag
-                        Invoke-AdvancedInstall -AppName $clickedAppName -Button $s
-                    }.GetNewClosure())
-
-                $groupStack.Children.Add($dockerBtn) | Out-Null
-                
-                # Enable Service Button
-                $enableDockerBtn = New-Object System.Windows.Controls.Button
-                $enableDockerBtn.Content = "Enable Docker Daemon"
-                $enableDockerBtn.Margin = "0,4,0,4"
-                $enableDockerBtn.Padding = "12,6"
-                $enableDockerBtn.FontSize = 13
-                $enableDockerBtn.FontWeight = "SemiBold"
-                $enableDockerBtn.Background = [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#E0E7FF"))
-                $enableDockerBtn.Foreground = [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#4338CA"))
-                $enableDockerBtn.BorderThickness = "0"
-                $enableDockerBtn.Add_Click({
-                    Start-Process "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"dockerd --register-service; Start-Service docker; Write-Host 'Docker daemon enabled and started. You can now use docker commands.' -ForegroundColor Green; Start-Sleep -Seconds 4`"" -Verb RunAs
-                })
-                $groupStack.Children.Add($enableDockerBtn) | Out-Null
-            }
-            elseif ($app.handler -and $app.handler -eq "searxng") {
-                # SearxNG section label
-                $label = New-Object System.Windows.Controls.TextBlock
-                $label.Text = $app.name
-                $label.FontWeight = "SemiBold"
-                $label.FontSize = 14
-                $label.Foreground = [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#4338CA"))
-                $label.Margin = "0,14,0,4"
-                $groupStack.Children.Add($label) | Out-Null
-
-                # Description
-                $desc = New-Object System.Windows.Controls.TextBlock
-                $desc.Text = "Privacy-respecting metasearch engine via Docker.`nRuns on port 8888, auto-starts on boot."
-                $desc.TextWrapping = "Wrap"
-                $desc.FontSize = 12
-                $desc.FontStyle = "Italic"
-                $desc.Margin = "0,2,0,6"
-                $desc.SetResourceReference([System.Windows.Controls.TextBlock]::ForegroundProperty, "TextBody")
-                $groupStack.Children.Add($desc) | Out-Null
-
-                # Store handler reference
-                $global:AdvancedHandlerCheckboxes[$app.name] = @{
-                    handler    = $app.handler
-                    checkboxes = @()
-                }
-
-                # Install button
-                $searxBtn = New-Object System.Windows.Controls.Button
-                $searxBtn.Content = "Install $($app.name)"
-                $searxBtn.Tag = $app.name
-                $searxBtn.Margin = "0,4,0,4"
-                $searxBtn.Padding = "12,6"
-                $searxBtn.FontSize = 13
-                $searxBtn.FontWeight = "SemiBold"
-                $searxBtn.Background = [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#10B981"))
-                $searxBtn.Foreground = [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("White"))
-                $searxBtn.BorderThickness = "0"
-
-                $searxBtn.Add_Click({
-                        param($s, $e)
-                        $clickedAppName = $s.Tag
-                        Invoke-AdvancedInstall -AppName $clickedAppName -Button $s
-                    }.GetNewClosure())
-
-                $groupStack.Children.Add($searxBtn) | Out-Null
-            }
             else {
                 # Standard apps render as checkboxes
                 $cb = New-Object System.Windows.Controls.CheckBox
@@ -765,6 +587,520 @@ catch {
     Write-Host "Failed to load or parse applications.json config!" -ForegroundColor Red
     Write-Host $_.Exception.Message -ForegroundColor Red
 }
+
+# ── Docker CLI Resolution ─────────────────────────────────────────────────
+# Resolve the real docker.exe from Docker Desktop (Program Files) to avoid
+# broken scoop shims that shadow it in PATH.
+function Resolve-DockerExe {
+    $candidates = @(
+        "$env:ProgramFiles\Docker\Docker\resources\bin\docker.exe"
+        "${env:ProgramFiles(x86)}\Docker\Docker\resources\bin\docker.exe"
+        "$env:LOCALAPPDATA\Docker\resources\bin\docker.exe"
+    )
+    foreach ($p in $candidates) {
+        if (Test-Path $p) { return $p }
+    }
+    # Fallback: resolve from PATH but skip scoop shims
+    $cmds = Get-Command docker.exe -All -ErrorAction SilentlyContinue
+    foreach ($c in $cmds) {
+        if ($c.Source -notlike '*\scoop\*') { return $c.Source }
+    }
+    return $null
+}
+
+$global:DockerExePath = Resolve-DockerExe
+
+# Ensure Docker Desktop daemon is running before issuing commands
+function Ensure-DockerRunning {
+    if (-not $global:DockerExePath) { return }
+    # Quick check: is the daemon responsive?
+    & $global:DockerExePath info *>$null 2>$null
+    if ($LASTEXITCODE -eq 0) { return }
+
+    Write-Host "  Docker Desktop is not running. Starting it..." -ForegroundColor Yellow
+    # Find and launch Docker Desktop
+    $ddPaths = @(
+        "$env:ProgramFiles\Docker\Docker\Docker Desktop.exe"
+        "${env:ProgramFiles(x86)}\Docker\Docker\Docker Desktop.exe"
+    )
+    $launched = $false
+    foreach ($ddPath in $ddPaths) {
+        if (Test-Path $ddPath) {
+            Start-Process $ddPath
+            $launched = $true
+            break
+        }
+    }
+    if (-not $launched) {
+        Write-Host "  Could not find Docker Desktop executable to start." -ForegroundColor Red
+        throw "Docker Desktop is not running and could not be started."
+    }
+
+    # Wait for daemon to become responsive (up to 60s)
+    $timeout = 60
+    $elapsed = 0
+    while ($elapsed -lt $timeout) {
+        Start-Sleep -Seconds 3
+        $elapsed += 3
+        [System.Windows.Forms.Application]::DoEvents()
+        & $global:DockerExePath info *>$null 2>$null
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "  Docker Desktop is ready." -ForegroundColor Green
+            return
+        }
+        Write-Host "  Waiting for Docker Desktop... ($elapsed/$timeout s)" -ForegroundColor DarkGray
+    }
+    throw "Docker Desktop did not start within $timeout seconds."
+}
+
+# Wrapper to invoke docker with the resolved path and check exit code
+function Invoke-Docker {
+    $DockerArgs = $args
+    if (-not $global:DockerExePath) {
+        throw "docker.exe not found. Is Docker Desktop installed?"
+    }
+    Ensure-DockerRunning
+
+    # Temporarily prepend Docker Desktop's bin dir to PATH so that
+    # docker-credential-desktop.exe and other helpers are found
+    $dockerBinDir = Split-Path $global:DockerExePath -Parent
+    $origPath = $env:PATH
+    $env:PATH = "$dockerBinDir;$env:PATH"
+
+    $argStr = $DockerArgs -join ' '
+    Write-Host "  > docker $argStr" -ForegroundColor DarkGray
+    try {
+        & $global:DockerExePath @DockerArgs
+        if ($LASTEXITCODE -ne 0) {
+            throw "docker $argStr failed with exit code $LASTEXITCODE"
+        }
+    }
+    finally {
+        $env:PATH = $origPath
+    }
+}
+
+# ── Docker Desktop Section (Advanced Tools) ──────────────────────────────
+$dockerGroup = New-Object System.Windows.Controls.StackPanel
+$dockerGroup.Margin = "0,0,20,30"
+$dockerGroup.Width = 220
+
+$dockerHeader = New-Object System.Windows.Controls.TextBlock
+$dockerHeader.Text = "Docker Desktop"
+$dockerHeader.FontWeight = "SemiBold"
+$dockerHeader.FontSize = 16
+$dockerHeader.SetResourceReference([System.Windows.Controls.TextBlock]::ForegroundProperty, "TextLabel")
+$dockerHeader.Margin = "0,0,0,10"
+$dockerGroup.Children.Add($dockerHeader) | Out-Null
+
+# Status indicator
+$dockerStatus = New-Object System.Windows.Controls.TextBlock
+$dockerStatus.Text = "Status: Checking..."
+$dockerStatus.FontSize = 12
+$dockerStatus.FontStyle = "Italic"
+$dockerStatus.SetResourceReference([System.Windows.Controls.TextBlock]::ForegroundProperty, "TextBody")
+$dockerStatus.Margin = "0,0,0,10"
+$dockerGroup.Children.Add($dockerStatus) | Out-Null
+
+function Update-DockerStatus {
+    param($StatusBlock)
+    $global:DockerExePath = Resolve-DockerExe
+    $installed = ($null -ne $global:DockerExePath) -or (winget list --id Docker.DockerDesktop 2>$null | Select-String 'Docker.DockerDesktop')
+    if ($installed) {
+        $svc = Get-Service -Name 'com.docker.service' -ErrorAction SilentlyContinue
+        if ($svc) {
+            $StatusBlock.Text = "Status: Installed ($($svc.Status))"
+        }
+        else {
+            $StatusBlock.Text = "Status: Installed"
+        }
+    }
+    else {
+        $StatusBlock.Text = "Status: Not Installed"
+    }
+}
+
+Update-DockerStatus -StatusBlock $dockerStatus
+
+# Helper to create styled buttons
+function New-DockerButton {
+    param([string]$Label, [string]$BgColor, [string]$FgColor)
+    $btn = New-Object System.Windows.Controls.Button
+    $btn.Content = $Label
+    $btn.Height = 32
+    $btn.Margin = "0,0,0,6"
+    $btn.Padding = "10,4"
+    $btn.FontSize = 13
+    $btn.FontWeight = "SemiBold"
+    $btn.Background = [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString($BgColor))
+    $btn.Foreground = [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString($FgColor))
+    $btn.BorderThickness = "0"
+    return $btn
+}
+
+$BtnDockerInstall = New-DockerButton -Label "Install Docker Desktop"   -BgColor "#10B981" -FgColor "White"
+$BtnDockerUninstall = New-DockerButton -Label "Uninstall Docker Desktop" -BgColor "#EF4444" -FgColor "White"
+$BtnDockerEnable = New-DockerButton -Label "Enable Docker Desktop"    -BgColor "#3B82F6" -FgColor "White"
+$BtnDockerDisable = New-DockerButton -Label "Disable Docker Desktop"   -BgColor "#F59E0B" -FgColor "White"
+
+$dockerGroup.Children.Add($BtnDockerInstall)   | Out-Null
+$dockerGroup.Children.Add($BtnDockerUninstall) | Out-Null
+$dockerGroup.Children.Add($BtnDockerEnable)    | Out-Null
+$dockerGroup.Children.Add($BtnDockerDisable)   | Out-Null
+
+$AdvancedListPanel.Children.Add($dockerGroup) | Out-Null
+
+# Docker Install Handler
+$BtnDockerInstall.Add_Click({
+        $BtnDockerInstall.Content = "Installing..."
+        $BtnDockerInstall.IsEnabled = $false
+        [System.Windows.Forms.Application]::DoEvents()
+
+        try {
+            Write-Host "Installing Docker Desktop via Winget..." -ForegroundColor Cyan
+            winget install -e --id Docker.DockerDesktop --accept-package-agreements --accept-source-agreements
+            if ($LASTEXITCODE -ne 0) { throw "winget install failed with exit code $LASTEXITCODE" }
+            $global:DockerExePath = Resolve-DockerExe
+            Write-Host "Docker Desktop installed successfully." -ForegroundColor Green
+            $BtnDockerInstall.Content = "Installed!"
+        }
+        catch {
+            Write-Host "Docker Desktop installation failed: $_" -ForegroundColor Red
+            $BtnDockerInstall.Content = "Install Failed"
+        }
+
+        Update-DockerStatus -StatusBlock $dockerStatus
+        $BtnDockerInstall.IsEnabled = $true
+        Start-Sleep -Milliseconds 1500
+        $BtnDockerInstall.Content = "Install Docker Desktop"
+    })
+
+# Docker Uninstall Handler
+$BtnDockerUninstall.Add_Click({
+        $BtnDockerUninstall.Content = "Uninstalling..."
+        $BtnDockerUninstall.IsEnabled = $false
+        [System.Windows.Forms.Application]::DoEvents()
+
+        try {
+            Write-Host "Uninstalling Docker Desktop via Winget..." -ForegroundColor Yellow
+            winget uninstall -e --id Docker.DockerDesktop
+            if ($LASTEXITCODE -ne 0) { throw "winget uninstall failed with exit code $LASTEXITCODE" }
+            $global:DockerExePath = $null
+            Write-Host "Docker Desktop uninstalled successfully." -ForegroundColor Green
+            $BtnDockerUninstall.Content = "Uninstalled!"
+        }
+        catch {
+            Write-Host "Docker Desktop uninstall failed: $_" -ForegroundColor Red
+            $BtnDockerUninstall.Content = "Uninstall Failed"
+        }
+
+        Update-DockerStatus -StatusBlock $dockerStatus
+        $BtnDockerUninstall.IsEnabled = $true
+        Start-Sleep -Milliseconds 1500
+        $BtnDockerUninstall.Content = "Uninstall Docker Desktop"
+    })
+
+# Docker Enable Handler
+$BtnDockerEnable.Add_Click({
+        $BtnDockerEnable.Content = "Enabling..."
+        $BtnDockerEnable.IsEnabled = $false
+        [System.Windows.Forms.Application]::DoEvents()
+
+        try {
+            Write-Host "Enabling Docker Desktop services..." -ForegroundColor Cyan
+            $services = @('com.docker.service')
+            foreach ($svcName in $services) {
+                $svc = Get-Service -Name $svcName -ErrorAction SilentlyContinue
+                if ($svc) {
+                    Set-Service -Name $svcName -StartupType Automatic -ErrorAction SilentlyContinue
+                    Start-Service -Name $svcName -ErrorAction SilentlyContinue
+                    Write-Host "  Started and enabled: $svcName" -ForegroundColor Green
+                }
+                else {
+                    Write-Host "  Service not found: $svcName" -ForegroundColor Yellow
+                }
+            }
+            $BtnDockerEnable.Content = "Enabled!"
+        }
+        catch {
+            Write-Host "Failed to enable Docker Desktop: $_" -ForegroundColor Red
+            $BtnDockerEnable.Content = "Enable Failed"
+        }
+
+        Update-DockerStatus -StatusBlock $dockerStatus
+        $BtnDockerEnable.IsEnabled = $true
+        Start-Sleep -Milliseconds 1500
+        $BtnDockerEnable.Content = "Enable Docker Desktop"
+    })
+
+# Docker Disable Handler
+$BtnDockerDisable.Add_Click({
+        $BtnDockerDisable.Content = "Disabling..."
+        $BtnDockerDisable.IsEnabled = $false
+        [System.Windows.Forms.Application]::DoEvents()
+
+        try {
+            Write-Host "Disabling Docker Desktop services..." -ForegroundColor Yellow
+            $services = @('com.docker.service')
+            foreach ($svcName in $services) {
+                $svc = Get-Service -Name $svcName -ErrorAction SilentlyContinue
+                if ($svc) {
+                    Stop-Service -Name $svcName -Force -ErrorAction SilentlyContinue
+                    Set-Service -Name $svcName -StartupType Disabled -ErrorAction SilentlyContinue
+                    Write-Host "  Stopped and disabled: $svcName" -ForegroundColor Green
+                }
+                else {
+                    Write-Host "  Service not found: $svcName" -ForegroundColor Yellow
+                }
+            }
+            $BtnDockerDisable.Content = "Disabled!"
+        }
+        catch {
+            Write-Host "Failed to disable Docker Desktop: $_" -ForegroundColor Red
+            $BtnDockerDisable.Content = "Disable Failed"
+        }
+
+        Update-DockerStatus -StatusBlock $dockerStatus
+        $BtnDockerDisable.IsEnabled = $true
+        Start-Sleep -Milliseconds 1500
+        $BtnDockerDisable.Content = "Disable Docker Desktop"
+    })
+
+# ── SearXNG Section (Advanced Tools) ─────────────────────────────────────
+$searxGroup = New-Object System.Windows.Controls.StackPanel
+$searxGroup.Margin = "0,0,20,30"
+$searxGroup.Width = 220
+
+$searxHeader = New-Object System.Windows.Controls.TextBlock
+$searxHeader.Text = "SearXNG"
+$searxHeader.FontWeight = "SemiBold"
+$searxHeader.FontSize = 16
+$searxHeader.SetResourceReference([System.Windows.Controls.TextBlock]::ForegroundProperty, "TextLabel")
+$searxHeader.Margin = "0,0,0,10"
+$searxGroup.Children.Add($searxHeader) | Out-Null
+
+# Status indicator
+$searxStatus = New-Object System.Windows.Controls.TextBlock
+$searxStatus.Text = "Status: Checking..."
+$searxStatus.FontSize = 12
+$searxStatus.FontStyle = "Italic"
+$searxStatus.SetResourceReference([System.Windows.Controls.TextBlock]::ForegroundProperty, "TextBody")
+$searxStatus.Margin = "0,0,0,8"
+$searxGroup.Children.Add($searxStatus) | Out-Null
+
+function Update-SearxStatus {
+    param($StatusBlock)
+    if (-not $global:DockerExePath) {
+        $StatusBlock.Text = "Status: Docker not found"
+        return
+    }
+    try {
+        $container = & $global:DockerExePath ps -a --filter "name=searxng" --format "{{.Status}}" 2>$null
+        if ($container) {
+            $StatusBlock.Text = "Status: $container"
+        }
+        else {
+            $image = & $global:DockerExePath images searxng/searxng --format "{{.Repository}}" 2>$null
+            if ($image) {
+                $StatusBlock.Text = "Status: Image only (no container)"
+            }
+            else {
+                $StatusBlock.Text = "Status: Not Installed"
+            }
+        }
+    }
+    catch {
+        $StatusBlock.Text = "Status: Docker unavailable"
+    }
+}
+
+Update-SearxStatus -StatusBlock $searxStatus
+
+# Volume path label & input
+$volLabel = New-Object System.Windows.Controls.TextBlock
+$volLabel.Text = "Volume Path"
+$volLabel.FontWeight = "SemiBold"
+$volLabel.FontSize = 12
+$volLabel.SetResourceReference([System.Windows.Controls.TextBlock]::ForegroundProperty, "TextLabel")
+$volLabel.Margin = "0,0,0,4"
+$searxGroup.Children.Add($volLabel) | Out-Null
+
+$searxVolPath = New-Object System.Windows.Controls.TextBox
+$searxVolPath.Text = (Join-Path $env:USERPROFILE ".searxng")
+$searxVolPath.FontSize = 11
+$searxVolPath.Padding = "6,4"
+$searxVolPath.Margin = "0,0,0,10"
+$searxGroup.Children.Add($searxVolPath) | Out-Null
+
+# Port info
+$portLabel = New-Object System.Windows.Controls.TextBlock
+$portLabel.Text = "Port: 8888  ·  http://localhost:8888"
+$portLabel.FontSize = 11
+$portLabel.FontStyle = "Italic"
+$portLabel.TextWrapping = "Wrap"
+$portLabel.SetResourceReference([System.Windows.Controls.TextBlock]::ForegroundProperty, "TextBody")
+$portLabel.Margin = "0,0,0,10"
+$searxGroup.Children.Add($portLabel) | Out-Null
+
+# Reuse the button helper from Docker section
+$BtnSearxInstall = New-DockerButton -Label "Install SearXNG"   -BgColor "#10B981" -FgColor "White"
+$BtnSearxUninstall = New-DockerButton -Label "Uninstall SearXNG" -BgColor "#EF4444" -FgColor "White"
+$BtnSearxEnable = New-DockerButton -Label "Enable SearXNG"    -BgColor "#3B82F6" -FgColor "White"
+$BtnSearxDisable = New-DockerButton -Label "Disable SearXNG"   -BgColor "#F59E0B" -FgColor "White"
+
+$searxGroup.Children.Add($BtnSearxInstall)   | Out-Null
+$searxGroup.Children.Add($BtnSearxUninstall) | Out-Null
+$searxGroup.Children.Add($BtnSearxEnable)    | Out-Null
+$searxGroup.Children.Add($BtnSearxDisable)   | Out-Null
+
+$AdvancedListPanel.Children.Add($searxGroup) | Out-Null
+
+# SearXNG Install Handler
+$BtnSearxInstall.Add_Click({
+        $BtnSearxInstall.Content = "Installing..."
+        $BtnSearxInstall.IsEnabled = $false
+        [System.Windows.Forms.Application]::DoEvents()
+
+        try {
+            # ── Step 1: Make sure Docker Engine is running ─────────────
+            Write-Host "`n[Step 1/6] Ensuring Docker Engine is running..." -ForegroundColor Cyan
+            if (-not $global:DockerExePath) {
+                $global:DockerExePath = Resolve-DockerExe
+            }
+            if (-not $global:DockerExePath) {
+                throw "Docker Desktop is not installed. Please install it first."
+            }
+            Ensure-DockerRunning
+            Write-Host "  Docker Engine is running." -ForegroundColor Green
+
+            # ── Step 2: Pull the SearXNG image ───────────────────────
+            Write-Host "`n[Step 2/6] Pulling SearXNG image..." -ForegroundColor Cyan
+            Invoke-Docker pull searxng/searxng:latest
+            Write-Host "  Image pulled successfully." -ForegroundColor Green
+
+            # ── Step 3: Set the container name ────────────────────────
+            Write-Host "`n[Step 3/6] Container name: searxng" -ForegroundColor Cyan
+            # Remove existing container if present (to avoid name conflict)
+            $existing = & $global:DockerExePath ps -a --filter "name=searxng" --format "{{.ID}}" 2>$null
+            if ($existing) {
+                Write-Host "  Removing existing 'searxng' container..." -ForegroundColor Yellow
+                Invoke-Docker rm -f searxng
+            }
+
+            # ── Step 4: Set the volume path ───────────────────────────
+            $volDir = $searxVolPath.Text
+            Write-Host "`n[Step 4/6] Volume path: $volDir" -ForegroundColor Cyan
+            if (-not (Test-Path $volDir)) {
+                New-Item -ItemType Directory -Path $volDir -Force | Out-Null
+                Write-Host "  Created volume directory." -ForegroundColor Green
+            } else {
+                Write-Host "  Volume directory already exists." -ForegroundColor Green
+            }
+
+            # ── Step 5: Set the port to 8888 ─────────────────────────
+            Write-Host "`n[Step 5/6] Port mapping: 8888 -> 8080 (container)" -ForegroundColor Cyan
+
+            # ── Step 6: Run the container with restart policy ─────────
+            Write-Host "`n[Step 6/6] Running container (restart: unless-stopped)..." -ForegroundColor Cyan
+            Invoke-Docker run -d --name searxng --restart=unless-stopped --publish 8888:8080 -v "${volDir}:/etc/searxng" searxng/searxng:latest
+            Write-Host "  Container started." -ForegroundColor Green
+
+            Write-Host "`nSearXNG setup complete! Access it at http://localhost:8888" -ForegroundColor Green
+            $BtnSearxInstall.Content = "Installed!"
+        }
+        catch {
+            Write-Host "SearXNG installation failed: $_" -ForegroundColor Red
+            $BtnSearxInstall.Content = "Install Failed"
+        }
+
+        Update-SearxStatus -StatusBlock $searxStatus
+        $BtnSearxInstall.IsEnabled = $true
+        Start-Sleep -Milliseconds 1500
+        $BtnSearxInstall.Content = "Install SearXNG"
+    })
+
+# SearXNG Uninstall Handler
+$BtnSearxUninstall.Add_Click({
+        $BtnSearxUninstall.Content = "Uninstalling..."
+        $BtnSearxUninstall.IsEnabled = $false
+        [System.Windows.Forms.Application]::DoEvents()
+
+        try {
+            if (-not $global:DockerExePath) { throw "Docker not found" }
+
+            Write-Host "Stopping and removing SearXNG container..." -ForegroundColor Yellow
+            & $global:DockerExePath rm -f searxng 2>$null
+
+            $volDir = $searxVolPath.Text
+            if (Test-Path $volDir) {
+                Write-Host "Removing volume directory: $volDir" -ForegroundColor Yellow
+                Remove-Item -Path $volDir -Recurse -Force
+            }
+
+            Write-Host "Removing SearXNG image..." -ForegroundColor Yellow
+            & $global:DockerExePath rmi searxng/searxng:latest 2>$null
+
+            Write-Host "SearXNG fully uninstalled." -ForegroundColor Green
+            $BtnSearxUninstall.Content = "Uninstalled!"
+        }
+        catch {
+            Write-Host "SearXNG uninstall failed: $_" -ForegroundColor Red
+            $BtnSearxUninstall.Content = "Uninstall Failed"
+        }
+
+        Update-SearxStatus -StatusBlock $searxStatus
+        $BtnSearxUninstall.IsEnabled = $true
+        Start-Sleep -Milliseconds 1500
+        $BtnSearxUninstall.Content = "Uninstall SearXNG"
+    })
+
+# SearXNG Enable Handler
+$BtnSearxEnable.Add_Click({
+        $BtnSearxEnable.Content = "Enabling..."
+        $BtnSearxEnable.IsEnabled = $false
+        [System.Windows.Forms.Application]::DoEvents()
+
+        try {
+            if (-not $global:DockerExePath) { throw "Docker not found" }
+            Write-Host "Starting SearXNG container..." -ForegroundColor Cyan
+            Invoke-Docker start searxng
+            Write-Host "SearXNG started at http://localhost:8888" -ForegroundColor Green
+            $BtnSearxEnable.Content = "Enabled!"
+        }
+        catch {
+            Write-Host "Failed to enable SearXNG: $_" -ForegroundColor Red
+            $BtnSearxEnable.Content = "Enable Failed"
+        }
+
+        Update-SearxStatus -StatusBlock $searxStatus
+        $BtnSearxEnable.IsEnabled = $true
+        Start-Sleep -Milliseconds 1500
+        $BtnSearxEnable.Content = "Enable SearXNG"
+    })
+
+# SearXNG Disable Handler
+$BtnSearxDisable.Add_Click({
+        $BtnSearxDisable.Content = "Disabling..."
+        $BtnSearxDisable.IsEnabled = $false
+        [System.Windows.Forms.Application]::DoEvents()
+
+        try {
+            if (-not $global:DockerExePath) { throw "Docker not found" }
+            Write-Host "Stopping SearXNG container..." -ForegroundColor Yellow
+            Invoke-Docker stop searxng
+            Write-Host "SearXNG stopped." -ForegroundColor Green
+            $BtnSearxDisable.Content = "Disabled!"
+        }
+        catch {
+            Write-Host "Failed to disable SearXNG: $_" -ForegroundColor Red
+            $BtnSearxDisable.Content = "Disable Failed"
+        }
+
+        Update-SearxStatus -StatusBlock $searxStatus
+        $BtnSearxDisable.IsEnabled = $true
+        Start-Sleep -Milliseconds 1500
+        $BtnSearxDisable.Content = "Disable SearXNG"
+    })
 
 # Bind Bucket List Handlers
 $BucketListPanel = $Form.FindName("BucketListPanel")
@@ -1031,19 +1367,7 @@ $BtnInstallSelected.Add_Click({
             }
         }
 
-        # WSL Setup for Docker
-        if ($scoopApps -contains "main/docker") {
-            Write-Host "Docker installation detected. Enabling Windows Subsystem for Linux (WSL)..." -ForegroundColor Cyan
-            try {
-                wsl --install
-                wsl --update
-                Write-Host "WSL installation completed successfully." -ForegroundColor Green
-            }
-            catch {
-                Write-Host "Failed to install or update WSL. Manual setup may be required." -ForegroundColor Red
-                Write-Host $_ -ForegroundColor Red
-            }
-        }
+
 
         $BtnInstallSelected.Content = "Install Selected"
         $BtnInstallSelected.IsEnabled = $true

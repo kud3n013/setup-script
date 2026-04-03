@@ -577,15 +577,5 @@
         }
       ]
     }
-  ],
-  "Server Tools": [
-    {
-      "name": "Docker",
-      "handler": "docker"
-    },
-    {
-      "name": "SearxNG",
-      "handler": "searxng"
-    }
   ]
 }
