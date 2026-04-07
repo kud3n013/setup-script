@@ -33,7 +33,7 @@ You can run the setup utility directly without downloading the repository.
 2. Run the following command:
 
 ```powershell
-irm "https://raw.githubusercontent.com/kud3n013/setup-script/master/windows/main.ps1" | iex
+irm "https://raw.githubusercontent.com/kud3n013/sKript/master/windows/main.ps1" | iex
 ```
 
 **Alternative: Run Locally**

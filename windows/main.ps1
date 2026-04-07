@@ -194,6 +194,18 @@ Add-Type -AssemblyName System.Windows.Forms
                         </StackPanel>
                     </StackPanel>
 
+                    <!-- Shortkuts Side Panel -->
+                    <StackPanel Name="SidePanelShortcuts" Visibility="Collapsed">
+                        <TextBlock Text="Shortkuts Options" FontWeight="Bold" FontSize="18" Margin="0,0,0,15" Foreground="{DynamicResource TextHeader}" />
+                        
+                        <TextBlock Text="Launcher Target" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,8" Foreground="{DynamicResource TextLabel}"/>
+                        <StackPanel Margin="0,0,0,15">
+                            <RadioButton Name="RbShellPowershell" Content="powershell" IsChecked="True" Margin="0,0,0,8" Foreground="{DynamicResource TextBody}"/>
+                            <RadioButton Name="RbShellPwsh" Content="pwsh" Margin="0,0,0,8" Foreground="{DynamicResource TextBody}"/>
+                            <RadioButton Name="RbShellCmd" Content="cmd" Margin="0,0,0,8" Foreground="{DynamicResource TextBody}"/>
+                        </StackPanel>
+                    </StackPanel>
+
                     <!-- App Version -->
                     <TextBlock Text="Version 26.3.31" 
                                FontSize="12" 
@@ -249,7 +261,15 @@ Add-Type -AssemblyName System.Windows.Forms
                     <!-- User Configs Panel -->
                     <StackPanel Name="PanelUserConfigs" Grid.Row="2" Visibility="Collapsed">
                         <TextBlock Text="Import and Export User Configurations." 
-                                   FontSize="15" Foreground="{DynamicResource TextBody}" TextWrapping="Wrap"/>
+                                   FontSize="15" Foreground="{DynamicResource TextBody}" TextWrapping="Wrap" Margin="0,0,0,20"/>
+                        
+                        <Button Name="BtnRunGlazeWMKonfig" Content="Run GlazeWM Konfig" Height="40" Width="280" Background="#8B5CF6" Foreground="White" FontWeight="Bold" FontSize="14" BorderThickness="0" HorizontalAlignment="Left" Padding="10,0">
+                            <Button.Resources>
+                                <Style TargetType="{x:Type Border}">
+                                    <Setter Property="CornerRadius" Value="6"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
                     </StackPanel>
 
                     <!-- Advanced Tools Panel -->
@@ -271,7 +291,15 @@ Add-Type -AssemblyName System.Windows.Forms
                         <TextBlock Text="Create and manage desktop or start menu shortcuts." 
                                    FontSize="15" Foreground="{DynamicResource TextBody}" TextWrapping="Wrap" Margin="0,0,0,20"/>
                         
-                        <Button Name="BtnCreateMainShortcut" Content="Create Setup Utility Shortcut (.lnk)" Height="40" Width="280" Background="#3B82F6" Foreground="White" FontWeight="Bold" FontSize="14" BorderThickness="0" HorizontalAlignment="Left" Padding="10,0">
+                        <Button Name="BtnCreateMainShortcut" Content="Create Setup Utility Shortcut (.lnk)" Height="40" Width="280" Background="#3B82F6" Foreground="White" FontWeight="Bold" FontSize="14" BorderThickness="0" HorizontalAlignment="Left" Padding="10,0" Margin="0,0,0,10">
+                            <Button.Resources>
+                                <Style TargetType="{x:Type Border}">
+                                    <Setter Property="CornerRadius" Value="6"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                        
+                        <Button Name="BtnCreateGlazeWMShortcut" Content="Create GlazeWM Konfig Shortcut (.lnk)" Height="40" Width="280" Background="#8B5CF6" Foreground="White" FontWeight="Bold" FontSize="14" BorderThickness="0" HorizontalAlignment="Left" Padding="10,0">
                             <Button.Resources>
                                 <Style TargetType="{x:Type Border}">
                                     <Setter Property="CornerRadius" Value="6"/>
@@ -318,9 +346,14 @@ $PanelShortcutsKreation = $Form.FindName("PanelShortcutsKreation")
 $PanelWelcome = $Form.FindName("PanelWelcome")
 $SidePanelDefault = $Form.FindName("SidePanelDefault")
 $SidePanelInstall = $Form.FindName("SidePanelInstall")
+$SidePanelShortcuts = $Form.FindName("SidePanelShortcuts")
 
 $BtnCreateMainShortcut = $Form.FindName("BtnCreateMainShortcut")
-
+$BtnCreateGlazeWMShortcut = $Form.FindName("BtnCreateGlazeWMShortcut")
+$BtnRunGlazeWMKonfig = $Form.FindName("BtnRunGlazeWMKonfig")
+$RbShellPowershell = $Form.FindName("RbShellPowershell")
+$RbShellPwsh = $Form.FindName("RbShellPwsh")
+$RbShellCmd = $Form.FindName("RbShellCmd")
 $BtnInstallScoop = $Form.FindName("BtnInstallScoop")
 
 $AppListPanel = $Form.FindName("AppListPanel")
@@ -1209,6 +1242,7 @@ function Hide-AllPanels {
     $PanelWelcome.Visibility = "Collapsed"
     $SidePanelDefault.Visibility = "Collapsed"
     $SidePanelInstall.Visibility = "Collapsed"
+    $SidePanelShortcuts.Visibility = "Collapsed"
 }
 
 # Highlight Selected Menu Helper Function
@@ -1251,7 +1285,7 @@ $NavShortcutsKreation.Add_Click({
         $MainTitle.Text = "Shortkuts"
         Hide-AllPanels
         $PanelShortcutsKreation.Visibility = "Visible"
-        $SidePanelDefault.Visibility = "Visible"
+        $SidePanelShortcuts.Visibility = "Visible"
     })
 
 $BtnInstallScoop.Add_Click({
@@ -1373,6 +1407,49 @@ $BtnInstallSelected.Add_Click({
         $BtnInstallSelected.IsEnabled = $true
     })
 
+function New-ShortcutLink {
+    param(
+        [string]$ShortcutPath,
+        [string]$FileNameBase,
+        [string]$IrmUrl,
+        [bool]$RequiresAdmin
+    )
+    $baseShell = "powershell.exe"
+    if ($RbShellPwsh.IsChecked) { $baseShell = "pwsh.exe" }
+    
+    $scriptMode = "ps1"
+    if ($RbShellCmd.IsChecked) { $scriptMode = "cmd" }
+    
+    $appDataPath = Join-Path $env:LOCALAPPDATA "WindowsSetupUtility"
+    if (-not (Test-Path $appDataPath)) { New-Item -ItemType Directory -Path $appDataPath -Force | Out-Null }
+    
+    $WshShell = New-Object -ComObject WScript.Shell
+    $Shortcut = $WshShell.CreateShortcut($ShortcutPath)
+
+    $adminArg = if ($RequiresAdmin) { "-Verb RunAs" } else { "" }
+    $argsList = "'-NoProfile -ExecutionPolicy Bypass -Command `"irm $IrmUrl | iex`"'"
+
+    if ($scriptMode -eq "cmd") {
+        $launcherPath = Join-Path $appDataPath "$($FileNameBase).cmd"
+        $launcherContent = "@echo off`r`npowershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -Command `"Start-Process $baseShell -ArgumentList $argsList $adminArg`""
+        Set-Content -Path $launcherPath -Value $launcherContent -Force
+        
+        $Shortcut.TargetPath = "cmd.exe"
+        $Shortcut.Arguments = "/c `"$launcherPath`""
+        $Shortcut.IconLocation = "cmd.exe,0"
+    } else {
+        $launcherPath = Join-Path $appDataPath "$($FileNameBase).ps1"
+        $launcherContent = "Start-Process $baseShell -ArgumentList $argsList $adminArg"
+        Set-Content -Path $launcherPath -Value $launcherContent -Force
+        
+        $Shortcut.TargetPath = "$baseShell"
+        $Shortcut.Arguments = "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$launcherPath`""
+        $Shortcut.IconLocation = "$baseShell,0"
+    }
+    
+    $Shortcut.Save()
+}
+
 $BtnCreateMainShortcut.Add_Click({
         $BtnCreateMainShortcut.Content = "Creating..."
         $BtnCreateMainShortcut.IsEnabled = $false
@@ -1381,23 +1458,7 @@ $BtnCreateMainShortcut.Add_Click({
         try {
             $desktopPath = [Environment]::GetFolderPath("Desktop")
             $shortcutPath = Join-Path $desktopPath "Windows Setup Utility.lnk"
-            
-            # Create a launcher script in LocalAppData to avoid Defender heuristics on LNK shortcut arguments
-            $appDataPath = Join-Path $env:LOCALAPPDATA "WindowsSetupUtility"
-            if (-not (Test-Path $appDataPath)) { New-Item -ItemType Directory -Path $appDataPath -Force | Out-Null }
-            $launcherPath = Join-Path $appDataPath "launcher.ps1"
-            
-            $launcherContent = @"
-Start-Process powershell.exe -ArgumentList '-NoProfile -ExecutionPolicy Bypass -Command `"irm https://raw.githubusercontent.com/kud3n013/setup-script/master/windows/main.ps1 | iex`"' -Verb RunAs
-"@
-            Set-Content -Path $launcherPath -Value $launcherContent -Force
-
-            $WshShell = New-Object -ComObject WScript.Shell
-            $Shortcut = $WshShell.CreateShortcut($shortcutPath)
-            $Shortcut.TargetPath = "powershell.exe"
-            $Shortcut.Arguments = "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$launcherPath`""
-            $Shortcut.IconLocation = "powershell.exe,0"
-            $Shortcut.Save()
+            New-ShortcutLink -ShortcutPath $shortcutPath -FileNameBase "launcher" -IrmUrl "https://raw.githubusercontent.com/kud3n013/setup-script/master/windows/main.ps1" -RequiresAdmin $true
             
             Write-Host "Created shortcut at $shortcutPath" -ForegroundColor Green
             $BtnCreateMainShortcut.Content = "Shortcut Created"
@@ -1421,6 +1482,78 @@ Start-Process powershell.exe -ArgumentList '-NoProfile -ExecutionPolicy Bypass -
                     })
             }) | Out-Null
         $PowerShell.Runspace.SessionStateProxy.SetVariable("BtnCreateMainShortcut", $BtnCreateMainShortcut)
+        $PowerShell.Runspace.SessionStateProxy.SetVariable("Form", $Form)
+        $PowerShell.BeginInvoke() | Out-Null
+    })
+
+# GlazeWM Konfig Handler
+$BtnRunGlazeWMKonfig.Add_Click({
+        $BtnRunGlazeWMKonfig.Content = "Launching..."
+        $BtnRunGlazeWMKonfig.IsEnabled = $false
+        [System.Windows.Forms.Application]::DoEvents()
+
+        try {
+            Write-Host "Launching GlazeWM Konfig..." -ForegroundColor Cyan
+            $cmdArgs = '-NoProfile -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/kud3n013/glazewm-konfig/main/glazewm-konfig.ps1 | iex"'
+            Start-Process powershell.exe -ArgumentList $cmdArgs
+            Write-Host "Started GlazeWM Konfig process." -ForegroundColor Green
+            $BtnRunGlazeWMKonfig.Content = "Configurator Launched"
+        }
+        catch {
+            Write-Host "Failed to launch GlazeWM Konfig: $_" -ForegroundColor Red
+            $BtnRunGlazeWMKonfig.Content = "Launch Failed"
+        }
+        
+        # Reset the button after some time without blocking the UI thread
+        $Runspace = [runspacefactory]::CreateRunspace()
+        $Runspace.ThreadOptions = "ReuseThread"
+        $Runspace.Open()
+        $PowerShell = [powershell]::Create()
+        $PowerShell.Runspace = $Runspace
+        $PowerShell.AddScript({
+                Start-Sleep -Seconds 2
+                $Form.Dispatcher.Invoke({
+                        $BtnRunGlazeWMKonfig.Content = "Run GlazeWM Konfig"
+                        $BtnRunGlazeWMKonfig.IsEnabled = $true
+                    })
+            }) | Out-Null
+        $PowerShell.Runspace.SessionStateProxy.SetVariable("BtnRunGlazeWMKonfig", $BtnRunGlazeWMKonfig)
+        $PowerShell.Runspace.SessionStateProxy.SetVariable("Form", $Form)
+        $PowerShell.BeginInvoke() | Out-Null
+    })
+
+$BtnCreateGlazeWMShortcut.Add_Click({
+        $BtnCreateGlazeWMShortcut.Content = "Creating..."
+        $BtnCreateGlazeWMShortcut.IsEnabled = $false
+        [System.Windows.Forms.Application]::DoEvents()
+
+        try {
+            $desktopPath = [Environment]::GetFolderPath("Desktop")
+            $shortcutPath = Join-Path $desktopPath "GlazeWM Konfig.lnk"
+            New-ShortcutLink -ShortcutPath $shortcutPath -FileNameBase "glazewm_launcher" -IrmUrl "https://raw.githubusercontent.com/kud3n013/glazewm-konfig/main/glazewm-konfig.ps1" -RequiresAdmin $false
+            
+            Write-Host "Created shortcut at $shortcutPath" -ForegroundColor Green
+            $BtnCreateGlazeWMShortcut.Content = "Shortcut Created"
+        }
+        catch {
+            Write-Host "Failed to create shortcut: $_" -ForegroundColor Red
+            $BtnCreateGlazeWMShortcut.Content = "Creation Failed"
+        }
+        
+        # We start a runspace to reset the button after some time without blocking the UI thread
+        $Runspace = [runspacefactory]::CreateRunspace()
+        $Runspace.ThreadOptions = "ReuseThread"
+        $Runspace.Open()
+        $PowerShell = [powershell]::Create()
+        $PowerShell.Runspace = $Runspace
+        $PowerShell.AddScript({
+                Start-Sleep -Seconds 2
+                $Form.Dispatcher.Invoke({
+                        $BtnCreateGlazeWMShortcut.Content = "Create GlazeWM Konfig Shortcut (.lnk)"
+                        $BtnCreateGlazeWMShortcut.IsEnabled = $true
+                    })
+            }) | Out-Null
+        $PowerShell.Runspace.SessionStateProxy.SetVariable("BtnCreateGlazeWMShortcut", $BtnCreateGlazeWMShortcut)
         $PowerShell.Runspace.SessionStateProxy.SetVariable("Form", $Form)
         $PowerShell.BeginInvoke() | Out-Null
     })
