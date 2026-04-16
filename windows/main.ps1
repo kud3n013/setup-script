@@ -93,6 +93,16 @@ Add-Type -AssemblyName System.Windows.Forms
                             </Style>
                         </Button.Resources>
                     </Button>
+
+                    <Button Name="NavDebloat" Content="Debloat" Height="34" Margin="2,0" 
+                            Background="Transparent" BorderThickness="0" FontSize="13" FontWeight="SemiBold"
+                            Padding="18,0" Foreground="{DynamicResource NavBtnFg}">
+                        <Button.Resources>
+                            <Style TargetType="{x:Type Border}">
+                                <Setter Property="CornerRadius" Value="6"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
                 </StackPanel>
 
                 <!-- Right Utility Buttons -->
@@ -248,8 +258,33 @@ Add-Type -AssemblyName System.Windows.Forms
                         </StackPanel>
                     </StackPanel>
 
+                    <!-- Debloat Side Panel -->
+                    <StackPanel Name="SidePanelDebloat" Visibility="Collapsed">
+                        <TextBlock Text="Debloat Options" FontWeight="Bold" FontSize="16" Margin="0,0,0,12" Foreground="{DynamicResource TextHeader}" />
+                        
+                        <TextBlock Text="INFO" FontWeight="Bold" FontSize="10" Margin="0,0,0,6" Foreground="{DynamicResource TextMuted}" />
+                        <TextBlock Text="Remove pre-installed bloatware and disable unwanted Windows services and telemetry." 
+                                   FontSize="12" Foreground="{DynamicResource TextBody}" TextWrapping="Wrap" Margin="0,0,0,15"/>
+                        
+                        <TextBlock Text="QUICK ACTIONS" FontWeight="Bold" FontSize="10" Margin="0,0,0,6" Foreground="{DynamicResource TextMuted}" />
+                        <Button Name="BtnDebloatSelectAll" Content="Select All" Height="30" Background="#D1FAE5" Foreground="#065F46" BorderThickness="0" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4">
+                            <Button.Resources>
+                                <Style TargetType="{x:Type Border}">
+                                    <Setter Property="CornerRadius" Value="4"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                        <Button Name="BtnDebloatDeselectAll" Content="Deselect All" Height="30" Background="#FEE2E2" Foreground="#991B1B" BorderThickness="0" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,4">
+                            <Button.Resources>
+                                <Style TargetType="{x:Type Border}">
+                                    <Setter Property="CornerRadius" Value="4"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </StackPanel>
+
                     <!-- Version -->
-                    <TextBlock Text="v26.4.11" 
+                    <TextBlock Text="v26.4.16" 
                                FontSize="11" 
                                FontWeight="Medium"
                                Foreground="{DynamicResource TextMuted}" 
@@ -433,6 +468,36 @@ Add-Type -AssemblyName System.Windows.Forms
                             </Border>
                         </StackPanel>
                     </ScrollViewer>
+
+                    <!-- ═══ Debloat Panel ═══ -->
+                    <Grid Name="PanelDebloat" Grid.Row="2" Visibility="Collapsed">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" Margin="0,0,0,15">
+                            <StackPanel>
+                                <TextBlock Text="Remove pre-installed bloatware and disable unwanted Windows services." 
+                                           FontSize="14" Foreground="{DynamicResource TextBody}" TextWrapping="Wrap" Margin="0,0,0,20"/>
+                                
+                                <WrapPanel Name="DebloatListPanel" Orientation="Horizontal" />
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <!-- Action Bar -->
+                        <Border Grid.Row="1" CornerRadius="8" Background="{DynamicResource SidebarBg}" Padding="15,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Button Name="BtnRunDebloat" Grid.Column="0" Content="Remove Selected" Height="36" Background="#EF4444" Foreground="White" FontWeight="Bold" FontSize="13" BorderThickness="0" Padding="16,0" HorizontalAlignment="Left">
+                                    <Button.Resources><Style TargetType="{x:Type Border}"><Setter Property="CornerRadius" Value="6"/></Style></Button.Resources>
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </Grid>
                     
                     <!-- ═══ Welcome/Home Panel ═══ -->
                     <StackPanel Name="PanelWelcome" Grid.Row="2" Visibility="Visible">
@@ -488,6 +553,7 @@ $NavInstall = $Form.FindName("NavInstall")
 $NavUserConfigs = $Form.FindName("NavUserConfigs")
 $NavAdvancedTools = $Form.FindName("NavAdvancedTools")
 $NavShortcutsKreation = $Form.FindName("NavShortcutsKreation")
+$NavDebloat = $Form.FindName("NavDebloat")
 $BtnToggleTheme = $Form.FindName("BtnToggleTheme")
 $MainTitle = $Form.FindName("MainTitle")
 $SubTitle = $Form.FindName("SubTitle")
@@ -496,10 +562,16 @@ $PanelInstall = $Form.FindName("PanelInstall")
 $PanelUserConfigs = $Form.FindName("PanelUserConfigs")
 $PanelAdvancedTools = $Form.FindName("PanelAdvancedTools")
 $PanelShortcutsKreation = $Form.FindName("PanelShortcutsKreation")
+$PanelDebloat = $Form.FindName("PanelDebloat")
 $PanelWelcome = $Form.FindName("PanelWelcome")
 $SidePanelDefault = $Form.FindName("SidePanelDefault")
 $SidePanelInstall = $Form.FindName("SidePanelInstall")
 $SidePanelShortcuts = $Form.FindName("SidePanelShortcuts")
+$SidePanelDebloat = $Form.FindName("SidePanelDebloat")
+$DebloatListPanel = $Form.FindName("DebloatListPanel")
+$BtnRunDebloat = $Form.FindName("BtnRunDebloat")
+$BtnDebloatSelectAll = $Form.FindName("BtnDebloatSelectAll")
+$BtnDebloatDeselectAll = $Form.FindName("BtnDebloatDeselectAll")
 
 $BtnCreateMainShortcut = $Form.FindName("BtnCreateMainShortcut")
 $BtnCreateGlazeWMShortcut = $Form.FindName("BtnCreateGlazeWMShortcut")
@@ -898,6 +970,138 @@ catch {
     Write-Host "Failed to load or parse applications.json config!" -ForegroundColor Red
     Write-Host $_.Exception.Message -ForegroundColor Red
 }
+
+# ── Debloat Items ─────────────────────────────────────────────────────────
+$global:DebloatCheckboxes = @()
+
+$debloatCategories = [ordered]@{
+    "Microsoft Bloatware" = @(
+        @{ name = "3D Viewer"; pkg = "Microsoft.Microsoft3DViewer" },
+        @{ name = "Bing News"; pkg = "Microsoft.BingNews" },
+        @{ name = "Bing Weather"; pkg = "Microsoft.BingWeather" },
+        @{ name = "Clipchamp"; pkg = "Clipchamp.Clipchamp" },
+        @{ name = "Cortana"; pkg = "Microsoft.549981C3F5F10" },
+        @{ name = "Feedback Hub"; pkg = "Microsoft.WindowsFeedbackHub" },
+        @{ name = "Get Help"; pkg = "Microsoft.GetHelp" },
+        @{ name = "Mail and Calendar"; pkg = "microsoft.windowscommunicationsapps" },
+        @{ name = "Maps"; pkg = "Microsoft.WindowsMaps" },
+        @{ name = "Microsoft News"; pkg = "Microsoft.News" },
+        @{ name = "Microsoft Solitaire"; pkg = "Microsoft.MicrosoftSolitaireCollection" },
+        @{ name = "Microsoft To Do"; pkg = "Microsoft.Todos" },
+        @{ name = "Mixed Reality Portal"; pkg = "Microsoft.MixedReality.Portal" },
+        @{ name = "Office Hub"; pkg = "Microsoft.MicrosoftOfficeHub" },
+        @{ name = "OneNote (Store)"; pkg = "Microsoft.Office.OneNote" },
+        @{ name = "Paint 3D"; pkg = "Microsoft.MSPaint" },
+        @{ name = "People"; pkg = "Microsoft.People" },
+        @{ name = "Power Automate"; pkg = "Microsoft.PowerAutomateDesktop" },
+        @{ name = "Skype"; pkg = "Microsoft.SkypeApp" },
+        @{ name = "Sticky Notes"; pkg = "Microsoft.MicrosoftStickyNotes" },
+        @{ name = "Tips"; pkg = "Microsoft.Getstarted" },
+        @{ name = "Voice Recorder"; pkg = "Microsoft.WindowsSoundRecorder" },
+        @{ name = "Widgets"; pkg = "MicrosoftWindows.Client.WebExperience" },
+        @{ name = "Your Phone"; pkg = "Microsoft.YourPhone" }
+    )
+    "Xbox & Gaming" = @(
+        @{ name = "Xbox"; pkg = "Microsoft.XboxGamingOverlay"; handler = "xbox" }
+    )
+    "Third-Party Bloat" = @(
+        @{ name = "Disney+"; pkg = "Disney.37853FC22B2CE" },
+        @{ name = "Spotify"; pkg = "SpotifyAB.SpotifyMusic" },
+        @{ name = "TikTok"; pkg = "BytedancePte.Ltd.TikTok" },
+        @{ name = "Instagram"; pkg = "Facebook.InstagramBeta" },
+        @{ name = "LinkedIn"; pkg = "7EE7776C.LinkedInforWindows" },
+        @{ name = "Amazon Prime Video"; pkg = "AmazonVideo.PrimeVideo" }
+    )
+}
+
+foreach ($catName in $debloatCategories.Keys) {
+    $groupStack = New-Object System.Windows.Controls.StackPanel
+    $groupStack.Margin = "0,0,20,30"
+    $groupStack.Width = 220
+
+    $header = New-Object System.Windows.Controls.TextBlock
+    $header.Text = $catName
+    $header.FontWeight = "SemiBold"
+    $header.FontSize = 16
+    $header.SetResourceReference([System.Windows.Controls.TextBlock]::ForegroundProperty, "TextLabel")
+    $header.Margin = "0,0,0,10"
+    $groupStack.Children.Add($header) | Out-Null
+
+    foreach ($item in $debloatCategories[$catName]) {
+        $cb = New-Object System.Windows.Controls.CheckBox
+        $cb.Content = $item.name
+        $cb.Tag = [PSCustomObject]@{ pkg = $item.pkg; handler = $item.handler }
+        $cb.Margin = "0,4,0,4"
+        $cb.FontSize = 14
+        $cb.Foreground = [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.ColorConverter]::ConvertFromString("#EF4444"))
+        $global:DebloatCheckboxes += $cb
+        $groupStack.Children.Add($cb) | Out-Null
+    }
+
+    $DebloatListPanel.Children.Add($groupStack) | Out-Null
+}
+
+# Debloat Select/Deselect All
+$BtnDebloatSelectAll.Add_Click({
+    foreach ($cb in $global:DebloatCheckboxes) { $cb.IsChecked = $true }
+})
+$BtnDebloatDeselectAll.Add_Click({
+    foreach ($cb in $global:DebloatCheckboxes) { $cb.IsChecked = $false }
+})
+
+# Debloat Remove Handler
+$BtnRunDebloat.Add_Click({
+    $selected = @($global:DebloatCheckboxes | Where-Object { $_.IsChecked })
+    if ($selected.Count -eq 0) {
+        $StatusBarText.Text = "No bloatware selected for removal."
+        return
+    }
+
+    $confirm = [System.Windows.MessageBox]::Show(
+        "Remove $($selected.Count) selected app(s)?`nThis will uninstall them for the current user.",
+        "Confirm Debloat",
+        "YesNo", "Warning"
+    )
+    if ($confirm -ne "Yes") { return }
+
+    $BtnRunDebloat.Content = "Removing..."
+    $BtnRunDebloat.IsEnabled = $false
+    [System.Windows.Forms.Application]::DoEvents()
+
+    $removed = 0
+    $failed = 0
+    foreach ($cb in $selected) {
+        $pkg = $cb.Tag.pkg
+        $handler = $cb.Tag.handler
+        Write-Host "Removing $($cb.Content) ($pkg)..." -ForegroundColor Yellow
+        try {
+            Get-AppxPackage $pkg -ErrorAction SilentlyContinue | Remove-AppxPackage -ErrorAction Stop
+            
+            # Special handler for Xbox: disable GameDVR popup via registry
+            if ($handler -eq "xbox") {
+                Write-Host "  Disabling GameDVR..." -ForegroundColor Cyan
+                reg add "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR" /f /t REG_DWORD /v "AppCaptureEnabled" /d 0 | Out-Null
+                reg add "HKEY_CURRENT_USER\System\GameConfigStore" /f /t REG_DWORD /v "GameDVR_Enabled" /d 0 | Out-Null
+                Write-Host "  GameDVR disabled" -ForegroundColor Green
+            }
+            
+            Write-Host "  Removed $($cb.Content)" -ForegroundColor Green
+            $cb.IsChecked = $false
+            $cb.IsEnabled = $false
+            $cb.Opacity = 0.4
+            $removed++
+        }
+        catch {
+            Write-Host "  Failed to remove $($cb.Content): $_" -ForegroundColor Red
+            $failed++
+        }
+        [System.Windows.Forms.Application]::DoEvents()
+    }
+
+    $BtnRunDebloat.Content = "Remove Selected"
+    $BtnRunDebloat.IsEnabled = $true
+    $StatusBarText.Text = "Debloat complete: $removed removed, $failed failed."
+})
 
 # ── Docker CLI Resolution ─────────────────────────────────────────────────
 # Resolve the real docker.exe from Docker Desktop (Program Files) to avoid
@@ -1547,10 +1751,12 @@ function Hide-AllPanels {
     $PanelUserConfigs.Visibility = "Collapsed"
     $PanelAdvancedTools.Visibility = "Collapsed"
     $PanelShortcutsKreation.Visibility = "Collapsed"
+    $PanelDebloat.Visibility = "Collapsed"
     $PanelWelcome.Visibility = "Collapsed"
     $SidePanelDefault.Visibility = "Collapsed"
     $SidePanelInstall.Visibility = "Collapsed"
     $SidePanelShortcuts.Visibility = "Collapsed"
+    $SidePanelDebloat.Visibility = "Collapsed"
     $SearchBarBorder.Visibility = "Collapsed"
     $MainSeparator.Visibility = "Visible"
     $SubTitle.Text = ""
@@ -1563,6 +1769,7 @@ function Set-MenuHighlight {
     $NavUserConfigs.Background = "Transparent"
     $NavAdvancedTools.Background = "Transparent"
     $NavShortcutsKreation.Background = "Transparent"
+    $NavDebloat.Background = "Transparent"
     $SelectedButton.SetResourceReference([System.Windows.Controls.Control]::BackgroundProperty, "NavBtnActiveBg")
 }
 
@@ -1600,6 +1807,15 @@ $NavShortcutsKreation.Add_Click({
         Hide-AllPanels
         $PanelShortcutsKreation.Visibility = "Visible"
         $SidePanelShortcuts.Visibility = "Visible"
+    })
+
+$NavDebloat.Add_Click({
+        Set-MenuHighlight $NavDebloat
+        $MainTitle.Text = "Debloat"
+        $SubTitle.Text = "$(@($global:DebloatCheckboxes).Count) items"
+        Hide-AllPanels
+        $PanelDebloat.Visibility = "Visible"
+        $SidePanelDebloat.Visibility = "Visible"
     })
 
 # Quick Action Buttons (Welcome page)
