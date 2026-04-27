@@ -397,9 +397,24 @@
   ],
   "Productivity": [
     {
+      "name": "AppFlowy",
+      "type": "scoop",
+      "id": "extras/appflowy"
+    },
+    {
       "name": "LibreOffice",
       "type": "scoop",
       "id": "extras/libreoffice"
+    },
+    {
+      "name": "Logseq",
+      "type": "scoop",
+      "id": "extras/logseq"
+    },
+    {
+      "name": "Notion",
+      "type": "scoop",
+      "id": "extras/notion"
     },
     {
       "name": "Obsidian",
@@ -410,6 +425,16 @@
       "name": "Office 365 Apps",
       "type": "scoop",
       "id": "nonportable/office-365-apps-np"
+    },
+    {
+      "name": "Office 365 Apps Minimal",
+      "type": "scoop",
+      "id": "nonportable/office-365-apps-minimal-np"
+    },
+    {
+      "name": "OnlyOffice Desktop Editors",
+      "type": "scoop",
+      "id": "extras/onlyoffice-desktopeditors"
     },
     {
       "name": "Okular",
